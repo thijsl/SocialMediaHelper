@@ -20,3 +20,5 @@ Create a Foursquare object by specifying an access token.
 ## Twitter
 Create a Twitter object by specifying the access token, the access token secret, the consumer key and the consumer secret.
 
+# Note
+I am by no means an expert in this, nor are the helper classes optimal. If you suggestions, send me a tweet at @thijsl_.
