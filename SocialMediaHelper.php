@@ -1,16 +1,28 @@
 <?php
 header('Content-Type: text/html; charset=utf-8');
 
+
+class SocialMedia {
+	
+	public $name;
+	public $version;
+	public $documentationURL;
+
+}
+
 /**
 	This is a helper class for the Foursquare API v2.
 	You create a Foursquare object by instancing it with an access token.
 */
-class Foursquare {
+class Foursquare extends SocialMedia {
 
 	public $accessToken;
 	
+	public $name = 'Foursquare';
 	public $version = '20140504';
-
+	public $documentationURL = 'https://developer.foursquare.com/overview/';
+	
+	
 	public function __construct($accessToken) {
 		$this->accessToken = $accessToken;
 	}
@@ -21,14 +33,14 @@ class Foursquare {
 	
 	public function getLastCheckIn($userId) {
 		$result = file_get_contents('https://api.foursquare.com/v2/users/'.$userId.'/checkins?oauth_token='.$this->accessToken.'&v='.$this->version);
-		$lastCheckIn = json_decode($result)->response->checkins->items[0];
-		return $lastCheckIn;
+		$lastCheckInData = json_decode($result)->response->checkins->items[0];
+		return new CheckIn($lastCheckInData, $userId);
 	}
 	
 	public function getLastCheckIns($userId, $amount) {
 		$result = file_get_contents('https://api.foursquare.com/v2/users/'.$userId.'/checkins?oauth_token='.$this->accessToken.'&v='.$this->version);
 		for ($i=0; $i < $amount; $i++) {
-			$lastCheckIn[$i] = json_decode($result)->response->checkins->items[$i];
+			$lastCheckIn[$i] = new CheckIn(json_decode($result)->response->checkins->items[$i]);
 		}
 		return $lastCheckIn;
 	}
@@ -41,12 +53,28 @@ class Foursquare {
 
 }
 
+class Twitter extends SocialMedia {
+
+}
+
+class Instagram extends SocialMedia {
+
+}
+
+class YouTube extends SocialMedia {
+
+}
+
+class Spotify extends SocialMedia {
+
+}
+
 /**
 	This is a Venue class. The Foursquare and Facebook classes can instance objects of this class.
 */
 class Venue {
 
-	public $data;
+	private $data;
 
 	public $id;
 	public $name;
@@ -56,7 +84,6 @@ class Venue {
 	public $tips;
 	
 	public function __construct($venueData) {
-		$this->id = $id;
 		$this->buildFoursquareVenue($venueData);
 	}
 	
@@ -72,10 +99,45 @@ class Venue {
 	
 }
 
-/*$fq = new Foursquare("KWBKDEIM2CD1HBUW2MESPMNMG33SMGYE5B5DDB1NO21AMPR5");
-$venue = $fq->getVenue('4b9ad03cf964a5204dd835e3');
+/**
+	This is a CheckIn class.
+*/
+class CheckIn {
 
-print_r($venue->tips);*/
+	private $data;
 
+	public $id;
+	public $time;
+	public $venue;
+	public $like;
+	public $likes;
+	public $sticker;
+	public $photos;
+	public $posts;
+	public $comments;
+	
+	public $userId;
+	
+	public function __construct($checkInData, $userId) {
+		$this->buildFoursquareCheckin($checkInData, $userId);
+	}
+	
+	private function buildFoursquareCheckin($checkInData, $userId) {
+		$this->data = $checkInData;
+		
+		$this->id = $checkInData->venue->id;
+		$this->time = $checkInData->createdAt;
+		$this->venue = new Venue($checkInData->venue);
+		$this->like = $checkInData->like;
+		$this->likes = $checkInData->likes;
+		$this->sticker = $checkInData->sticker;
+		$this->photos = $checkInData->photos;
+		$this->posts = $checkInData->posts;
+		$this->comments = $checkInData->comments;
+		
+		$this->userId = $userId;
+	}
+	
+}
 
 ?>
