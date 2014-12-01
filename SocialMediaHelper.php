@@ -65,9 +65,9 @@ class Twitter extends SocialMedia {
 	private $consumerSecret;
 	
 	private $postfields;
-    private $getfield;
-    protected $oauth;
-    public $url;
+	private $getfield;
+	protected $oauth;
+	public $url;
 
 	public function __construct($accessToken, $accessTokenSecret, $consumerKey, $consumerSecret) {
 		if (!in_array('curl', get_loaded_extensions())) 
@@ -107,8 +107,7 @@ class Twitter extends SocialMedia {
      * 
      * @return TwitterAPIExchange Instance of self for method chaining
      */
-    public function setPostfields(array $array)
-    {
+    public function setPostfields(array $array) {
         if (!is_null($this->getGetfield())) 
         { 
             throw new Exception('You can only choose get OR post fields.'); 
@@ -131,8 +130,7 @@ class Twitter extends SocialMedia {
      * 
      * @return \TwitterAPIExchange Instance of self for method chaining
      */
-    public function setGetfield($string)
-    {
+    public function setGetfield($string) {
         if (!is_null($this->getPostfields())) 
         { 
             throw new Exception('You can only choose get OR post fields.'); 
@@ -152,8 +150,7 @@ class Twitter extends SocialMedia {
      * 
      * @return string $this->getfields
      */
-    public function getGetfield()
-    {
+    public function getGetfield() {
         return $this->getfield;
     }
     
@@ -162,8 +159,7 @@ class Twitter extends SocialMedia {
      * 
      * @return array $this->postfields
      */
-    public function getPostfields()
-    {
+    public function getPostfields() {
         return $this->postfields;
     }
     
@@ -175,8 +171,7 @@ class Twitter extends SocialMedia {
      * @param string $requestMethod Either POST or GET
      * @return \TwitterAPIExchange Instance of self for method chaining
      */
-    public function buildOauth($url, $requestMethod)
-    {
+    public function buildOauth($url, $requestMethod) {
         if (!in_array(strtolower($requestMethod), array('post', 'get')))
         {
             throw new Exception('Request method must be either POST or GET');
@@ -226,8 +221,7 @@ class Twitter extends SocialMedia {
      * 
      * @return string json If $return param is true, returns json data.
      */
-    public function performRequest($return = true)
-    {
+    public function performRequest($return = true) {
         if (!is_bool($return)) 
         { 
             throw new Exception('performRequest parameter must be true or false'); 
@@ -275,8 +269,7 @@ class Twitter extends SocialMedia {
      * 
      * @return string Built base string
      */
-    private function buildBaseString($baseURI, $method, $params) 
-    {
+    private function buildBaseString($baseURI, $method, $params) {
         $return = array();
         ksort($params);
         
@@ -295,8 +288,7 @@ class Twitter extends SocialMedia {
      * 
      * @return string $return Header used by cURL for request
      */    
-    private function buildAuthorizationHeader($oauth) 
-    {
+    private function buildAuthorizationHeader($oauth) {
         $return = 'Authorization: OAuth ';
         $values = array();
         
