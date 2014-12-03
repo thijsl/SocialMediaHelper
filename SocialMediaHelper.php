@@ -1,6 +1,16 @@
 <?php
 header('Content-Type: text/html; charset=utf-8');
 
+/**
+* The SocialMediaHelper is a PHP helper class to communicate with many social media API's.
+* To utilize a specific API, create an instance of its class.
+*
+* This helper class isn't meant for the expert web developer, but rather for the novice user
+* who needs a quick workaround.
+*
+* @author Thijs Lowette <me@thij.sl>
+* @license http://opensource.org/licenses/GPL-3.0 GNU Public License
+*/
 
 class SocialMedia {
 	
@@ -50,8 +60,23 @@ class Foursquare extends SocialMedia {
 		$venue = new Venue($venueData);
 		return $venue;
 	}
+	
+	public function getVenuePhotos($venueId) {
+		if ($this->venueExists($venueId)) {
+		
+		} else {
+			$venueData = json_decode(file_get_contents('https://api.foursquare.com/v2/venues/'.$venueId.'?oauth_token='.$this->accessToken.'&v='.$this->version))->response;
+			$venue = new Venue($venueData);
+			return $venue->photos;
+		}
+	}
+	
+	public function venueExists($venueId) {
+		return false;
+	}
 
 }
+
 
 /**
 	This is a helper class for the Twitter REST API 1.1.
@@ -304,7 +329,73 @@ class Twitter extends SocialMedia {
 
 }
 
+/**
+	This is a helper class for the Instagram REST API 1.0.
+*/
 class Instagram extends SocialMedia {
+
+	public $accessToken;
+
+	public function __construct($accessToken) {
+		$this->accessToken = $accessToken;
+	}
+	
+	/**
+	* This function returns an array of users by searching their name.
+	* This function is also useful for finding a user's ID.
+	*	
+	* @param 	string $name	|	The name of the userID
+	*	
+	* @return 	mixed			| An array of users
+	*/
+	public function getUsers($name) {
+		$result = json_decode(file_get_contents('https://api.instagram.com/v1/users/search?q='.$name.'&access_token='.$this->accessToken));
+		return $result->data;
+	}
+	
+	/**
+	* This function returns basic information about a user by its ID.
+	*	
+	* @param 	int $userID	|	The user's ID
+	* 
+	* @return 	mixed 		| 	An array with basic information about the specified user
+	*/
+	public function getUser($userID) {
+		$result = json_decode(file_get_contents('https://api.instagram.com/v1/users/'.$userID.'/?access_token='.$this->accessToken));
+		return $result->data;
+	}
+	
+	/**
+	* This function returns the feed of the user.
+	* 
+	* @return	mixed		|	An array containing the feed of the user
+	*/
+	public function getFeed() {
+		$result = json_decode(file_get_contents('https://api.instagram.com/v1/users/self/feed?access_token='.$this->accessToken));
+		return $result->data;
+	}
+	
+	/**
+	* This function returns the most recent media of a user by its ID.
+	* 
+	* @param	int $userID	|	The user's ID
+	* 
+	* @return 	mixed		|	An array containing the most recent media of the specified user
+	*/
+	public function getRecentMedia($userID) {
+		$result = json_decode(file_get_contents('https://api.instagram.com/v1/users/'.$userID.'/media/recent/??access_token='.$this->accessToken));
+		return $result->data;
+	}
+	
+	/**
+	* This function returns liked media by the user.
+	* 
+	* @return	mixed		|	An array containing the liked media by the media.	
+	*/
+	public function getLiked() {
+		$result = json_decode(file_get_contents('https://api.instagram.com/v1/users/self/media/liked?access_token='.$this->accessToken));
+		return $result->data;
+	}
 
 }
 
@@ -329,6 +420,8 @@ class Venue {
 	public $url;
 	public $categories;
 	public $tips;
+	public $photos;
+	public $description;
 	
 	public function __construct($venueData) {
 		$this->buildFoursquareVenue($venueData);
@@ -341,7 +434,9 @@ class Venue {
 		$this->location = $venueData->venue->location;
 		$this->url = $venueData->venue->url;
 		$this->categories = $venueData->venue->categories;
-		$this->tips = $venueData ->venue->tips;
+		$this->tips = $venueData->venue->tips;
+		$this->photos = $venueData->venue->photos;
+		$this->description = $venueData->venue->description;
 	}
 	
 }
@@ -362,6 +457,7 @@ class CheckIn {
 	public $photos;
 	public $posts;
 	public $comments;
+	public $url;
 	
 	public $userId;
 	
@@ -381,10 +477,42 @@ class CheckIn {
 		$this->photos = $checkInData->photos;
 		$this->posts = $checkInData->posts;
 		$this->comments = $checkInData->comments;
+		$this->url = $checkInData->url;
 		
 		$this->userId = $userId;
 	}
 	
+}
+
+/**
+	This is a Photo class.
+*/
+class Photo {
+
+	public $data;
+
+	public $id;
+	public $time;
+	public $url;
+	public $width;
+	public $height;
+	
+	public function __construct($photoData, $socialMedia) {
+		if ($socialMedia == "Foursquare") {
+			$this->buildFoursquarePhoto($photoData);
+		}
+	}
+	
+	private function buildFoursquarePhoto($photoData) {
+		$this->data = $photoData;
+		
+		$this->id = $photoData->id;
+		$this->time = $photoData->createdAt;
+		$this->url = substr($photoData->prefix, 0, strlen($photoData->prefix)-2) . $photoData->suffix;
+		$this->width = $photoData->width;
+		$this->height = $photoData->height;
+	}
+
 }
 
 ?>
